@@ -17,7 +17,7 @@ defmodule MniscenceWeb.Router do
   scope "/", MniscenceWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", MniscenceLive
   end
 
   # Other scopes may use custom stacks.
