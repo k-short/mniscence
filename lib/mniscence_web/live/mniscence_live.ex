@@ -4,21 +4,30 @@ defmodule MniscenceWeb.MniscenceLive do
   alias PrimerLive.Component, as: Primer
 
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :nodes, [])}
+    {:ok, assign(socket, :nodes, [])}
   end
 
   def handle_event("add-node", params, socket) do
     %{"node" => %{"cookie" => cookie, "name" => name}} = params
 
-    # TODO add validation to the node form to ensure id is unique
+    # TODO use a unique ID
     node = %{cookie: cookie, id: name, is_selected: false, name: name}
-    {:noreply, stream_insert(socket, :nodes, node)}
+    {:noreply, update(socket, :nodes, fn nodes -> [node | nodes] end)}
+  end
+
+  def handle_event("node-selected", params, socket) do
+    %{"node-id" => selected_node_id} = params
+
+    update_is_selected =
+      fn node -> %{node | is_selected: node.id == selected_node_id} end
+
+    {:noreply, update(socket, :nodes, &Enum.map(&1, update_is_selected))}
   end
 
   def render(assigns) do
     ~H"""
     <div class="flex">
-      <Primer.box stream={@streams.nodes} id="node-row-slot" class="w-56">
+      <Primer.box id="node-row-slot" class="w-56">
         <:header class="d-flex flex-items-center">
           <Primer.button
             is_icon_only
@@ -32,19 +41,17 @@ defmodule MniscenceWeb.MniscenceLive do
           Nodes
         </:header_title>
         <:row
-          :let={{_dom_id, node}}
-          class="d-flex flex-items-center flex-justify-between"
-          is_hover_blue
+          :for={node <- @nodes}
           is_blue={node[:is_selected]}
+          is_hover_blue
+          phx-click="node-selected"
+          phx-value-node-id={node.id}
+          class="d-flex flex-items-center flex-justify-between"
         >
-          <span><%= node.name %></span>
+          <span class={"#{if node[:is_selected], do: "font-semibold"}"}><%= node.name %></span>
         </:row>
       </Primer.box>
-      <Primer.dialog
-        id="add-node-dialog"
-        is_backdrop
-        focus_after_opening_selector="#node-name"
-      >
+      <Primer.dialog id="add-node-dialog" is_backdrop focus_after_opening_selector="#node-name">
         <:header_title>Add Node</:header_title>
         <:body>
           <.form autocomplete="off" phx-submit="add-node">
