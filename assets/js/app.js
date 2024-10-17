@@ -21,14 +21,32 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import Split from "../vendor/split"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+let Hooks = {}
+Hooks.Prompt = window.prompt
+Hooks.Split = {
+  mounted() {
+    splitInstance = Split(['#one', '#two'], {
+      sizes: [25, 75],
+      minSize: 200, 
+    })
+  },
+
+  destroyed() {
+    if (splitInstance) {
+      splitInstance.destroy()
+      splitInstance = null
+    }
+  }
+}
+
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {
-    Prompt: window.Prompt
-  }
+  hooks: Hooks
 })
 
 // Show progress bar on live navigation and form submits
