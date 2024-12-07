@@ -70,9 +70,9 @@ defmodule MniscenceWeb.MniscenceLive do
           </.form>
         </:body>
       </Primer.dialog>
-      <div id="vertical-split-panes" class="flex" phx-hook="Split">
-        <div id="one" class="flex">LEFT PANE</div>
-        <div id="two" class="flex">RIGHT PANE</div>
+      <div id="vertical-split-panes" phx-hook="Split">
+        <div id="left-pane" class="split">LEFT PANE</div>
+        <div id="right-pane" class="split">RIGHT PANE</div>
       </div>
     </div>
     """

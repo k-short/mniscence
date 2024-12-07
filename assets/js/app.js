@@ -29,7 +29,7 @@ let Hooks = {}
 Hooks.Prompt = window.prompt
 Hooks.Split = {
   mounted() {
-    splitInstance = Split(['#one', '#two'], {
+    splitInstance = Split(['#left-pane', '#right-pane'], {
       sizes: [25, 75],
       minSize: 200, 
     })
