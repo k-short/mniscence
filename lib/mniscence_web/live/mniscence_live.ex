@@ -1,8 +1,6 @@
 defmodule MniscenceWeb.MniscenceLive do
   use MniscenceWeb, :live_view
 
-  alias PrimerLive.Component, as: Primer
-
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :nodes, [])}
   end
@@ -27,49 +25,6 @@ defmodule MniscenceWeb.MniscenceLive do
   def render(assigns) do
     ~H"""
     <div>
-      <Primer.dialog id="add-node-dialog" is_backdrop focus_after_opening_selector="#node-name">
-        <:header_title>Add Node</:header_title>
-        <:body>
-          <.form autocomplete="off" phx-submit="add-node">
-            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 1em;">
-              <div style="width: 100%;">
-                <Primer.text_input
-                  form={:node}
-                  field="name"
-                  is_full_width
-                  form_control={
-                    %{
-                      style: "width: 100%;"
-                    }
-                  }
-                />
-              </div>
-              <div style="width: 100%;">
-                <Primer.text_input
-                  form={:node}
-                  field="cookie"
-                  is_full_width
-                  form_control={
-                    %{
-                      style: "width: 100%;"
-                    }
-                  }
-                />
-              </div>
-            </div>
-            <div class="d-flex flex-justify-end mt-3">
-              <Primer.button
-                is_primary
-                is_submit
-                class="ml-2"
-                phx-click={Primer.close_dialog("add-node-dialog")}
-              >
-                Add
-              </Primer.button>
-            </div>
-          </.form>
-        </:body>
-      </Primer.dialog>
       <div id="vertical-split-panes" phx-hook="Split">
         <div id="left-pane" class="split">LEFT PANE</div>
         <div id="right-pane" class="split">RIGHT PANE</div>
