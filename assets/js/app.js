@@ -30,8 +30,8 @@ Hooks.Prompt = window.prompt
 Hooks.Split = {
   mounted() {
     splitInstance = Split(['#left-pane', '#right-pane'], {
-      sizes: [25, 75],
-      minSize: 200, 
+      sizes: [20, 80],
+      gutterSize: 4
     })
   },
 
