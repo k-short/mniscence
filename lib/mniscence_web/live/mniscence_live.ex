@@ -1,12 +1,14 @@
 defmodule MniscenceWeb.MniscenceLive do
   use MniscenceWeb, :live_view
 
+  @blank_node_form to_form(%{"name" => "", "cookie" => ""})
+
   def mount(_params, _session, socket) do
     {:ok,
       socket
       |> assign(:nodes, [])
       |> assign(:show_add_node_modal, false)
-      |> assign(:node_form, to_form(%{"name" => "", "cookie" => ""}))
+      |> assign(:node_form, @blank_node_form)
     }
 
   end
@@ -16,7 +18,11 @@ defmodule MniscenceWeb.MniscenceLive do
 
     # TODO use a unique ID
     node = %{cookie: cookie, id: name, is_selected: false, name: name}
-    {:noreply, update(socket, :nodes, fn nodes -> [node | nodes] end)}
+    {:noreply,
+      socket
+      |> update(:nodes, fn nodes -> Enum.sort_by([node | nodes], & &1.name) end)
+      |> assign(:node_form, @blank_node_form)
+    }
   end
 
   def handle_event("validate-node-form", _params, socket) do
@@ -45,32 +51,25 @@ defmodule MniscenceWeb.MniscenceLive do
           </:actions>
         </.simple_form>
       </.modal>
-      <div id="vertical-split-panes" phx-hook="Split">
-        <div id="left-pane" class="split">
-          <div
-            id="sidebar"
-            class="flex flex-col"
-          >
-            <div class="flex justify-between">
-              <div>Nodes</div>
-              <button phx-click={show_modal("add-node-modal")}>
-                <.icon
-                  name="hero-plus-circle"
-                  class="bg-green-500 hover:bg-green-400"
-                />
-              </button>
-            </div>
-            <hr />
-            <%= if Enum.empty?(@nodes) do %>
-              <div>No nodes added</div>
-            <% else %>
-              <div :for={node <- @nodes}>
-                <div>{node.name}</div>
-              </div>
-            <% end %>
+      <div>
+        <div
+          id="sidebar"
+          class="flex flex-col w-1/4 min-h-96 p-2 border-solid border-2"
+        >
+          <div class="flex justify-between">
+            <div>Nodes</div>
+            <button phx-click={show_modal("add-node-modal")}>
+              <.icon
+                name="hero-plus-circle"
+                class="bg-green-500 hover:bg-green-400"
+              />
+            </button>
+          </div>
+          <hr class="my-2"/>
+          <div :for={node <- @nodes}>
+            <div>{node.name}</div>
           </div>
         </div>
-        <div id="right-pane" class="split"></div>
       </div>
     </div>
     """

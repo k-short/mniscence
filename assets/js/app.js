@@ -27,21 +27,26 @@ let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("
 
 let Hooks = {}
 Hooks.Prompt = window.prompt
-Hooks.Split = {
-  mounted() {
-    splitInstance = Split(['#left-pane', '#right-pane'], {
-      sizes: [20, 80],
-      gutterSize: 4
-    })
-  },
 
-  destroyed() {
-    if (splitInstance) {
-      splitInstance.destroy()
-      splitInstance = null
-    }
-  }
-}
+// TODO: Fix split pane
+// When the sidebar re-renders after a node is added, the split pane gutter 
+// disappears and the sidebar gets smaller. 
+// 
+// Hooks.Split = {
+//   mounted() {
+//     splitInstance = Split(['#left-pane', '#right-pane'], {
+//       sizes: [20, 80],
+//       gutterSize: 4
+//     })
+//   },
+
+//   destroyed() {
+//     if (splitInstance) {
+//       splitInstance.destroy()
+//       splitInstance = null
+//     }
+//   }
+// }
 
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
