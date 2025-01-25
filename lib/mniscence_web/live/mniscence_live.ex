@@ -1,49 +1,100 @@
 defmodule MniscenceWeb.MniscenceLive do
   use MniscenceWeb, :live_view
 
+  alias Mniscence.Nodes
+
   @blank_node_form to_form(%{"name" => "", "cookie" => ""})
 
   def mount(_params, _session, socket) do
+    test_node =
+      %{
+        cookie: "asdf",
+        id: "node-1",
+        is_expanded: false,
+        name: "nodeone@localhost",
+        connection_status: :not_called
+      }
+
     {:ok,
       socket
-      |> assign(:nodes, [])
+      |> assign(:nodes, [test_node])
       |> assign(:show_add_node_modal, false)
       |> assign(:node_form, @blank_node_form)
     }
-
   end
 
-  def handle_event("add-node", params, socket) do
+  def handle_event("node-added", params, socket) do
     %{"cookie" => cookie, "name" => name} = params
+    node_id = "node-#{1 + length(socket.assigns.nodes)}"
+    node =
+      %{
+        cookie: cookie,
+        id: node_id,
+        is_expanded: false,
+        name: name,
+        connection_status: :not_called
+      }
 
-    # TODO use a unique ID
-    node = %{cookie: cookie, id: name, is_selected: false, name: name}
     {:noreply,
       socket
       |> update(:nodes, fn nodes -> Enum.sort_by([node | nodes], & &1.name) end)
+      # TODO figure out why this isn't blanking the modal fields when it's opened again
       |> assign(:node_form, @blank_node_form)
     }
   end
 
-  def handle_event("validate-node-form", _params, socket) do
+  def handle_event("node-form-changed", _params, socket) do
     # TODO validation
     {:noreply, socket}
   end
 
-  def handle_event("node-selected", params, socket) do
-    %{"node-id" => selected_node_id} = params
+  def handle_event("expand-node-toggled", %{"node-id" => node_id}, socket) do
+    case Enum.find(socket.assigns.nodes, fn node -> node.id == node_id end) do
+      %{is_expanded: true} = node ->
+        handle_node_collapsed_event(node, socket)
 
-    update_is_selected =
-      fn node -> %{node | is_selected: node.id == selected_node_id} end
+      %{is_expanded: false} = node ->
+        handle_node_expanded_event(node, socket)
+    end
+  end
 
-    {:noreply, update(socket, :nodes, &Enum.map(&1, update_is_selected))}
+  defp handle_node_expanded_event(expanded_node, socket) do
+    update_node =
+      fn node ->
+        if node.id == expanded_node.id do
+          connection_status =
+            case Nodes.alive?(String.to_atom(node.name), String.to_atom(node.cookie)) do
+              # TODO map return types to correct statuses
+              _ -> :failed_to_call
+            end
+
+          %{node | connection_status: connection_status, is_expanded: true}
+        else
+          node
+        end
+      end
+
+      {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
+  end
+
+  def handle_node_collapsed_event(collapsed_node, socket) do
+    update_node =
+      fn node ->
+        if node.id == collapsed_node.id do
+          %{node | is_expanded: false}
+        else
+          node
+        end
+      end
+
+      {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
   end
 
   def render(assigns) do
     ~H"""
     <div>
       <.modal id="add-node-modal">
-        <.simple_form for={@node_form} phx-change="validate-node-form" phx-submit="add-node">
+        <.simple_form for={@node_form} phx-change="node-form-changed" phx-submit="node-added">
           <.input field={@node_form[:name]} label="Name"/>
           <.input field={@node_form[:cookie]} label="Cookie" />
           <:actions>
@@ -67,7 +118,28 @@ defmodule MniscenceWeb.MniscenceLive do
           </div>
           <hr class="my-2"/>
           <div :for={node <- @nodes}>
-            <div>{node.name}</div>
+            <div class="flex items-center">
+              <button phx-click="expand-node-toggled" phx-value-node-id={node.id}>
+                <.icon
+                  name="hero-chevron-right"
+                  class={if node.is_expanded, do: "w-3 h-3 mr-1 rotate-90", else: "w-3 h-3 mr-1"}
+                />
+              </button>
+              <div>{node.name}</div>
+              <%= case node.connection_status do %>
+                <% :called -> %>
+                  <.icon
+                    name="hero-check"
+                    class="w-4 h-4 ml-4 bg-green-500"
+                  />
+                <% :failed_to_call -> %>
+                  <.icon
+                    name="hero-x-mark"
+                    class="w-4 h-4 ml-4 bg-red-500"
+                  />
+                <% _ -> %>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>
