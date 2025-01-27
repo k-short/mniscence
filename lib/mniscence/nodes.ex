@@ -3,11 +3,23 @@ defmodule Mniscence.Nodes do
   A module for managing nodes.
   """
 
-  def alive?(name, cookie) when is_atom(name) and is_atom(cookie) do
-    # This does not work because the self node is not a distributed node
-    Node.set_cookie(cookie)
+  require Logger
 
-    # Currently failing
-    :erpc.call(name, :is_alive)
+  @doc """
+  Returns true if the node is alive, false otherwise.
+  """
+  @spec alive?(atom(), atom()) :: boolean()
+  def alive?(name, cookie) when is_atom(name) and is_atom(cookie) do
+    unless cookie == Node.get_cookie() do
+      Node.set_cookie(Node.self(), cookie)
+    end
+
+    try do
+      :erpc.call(name, :erlang, :is_alive, [])
+    rescue
+      error ->
+        Logger.error("Failed to call node #{name}: #{inspect(error)}")
+        false
+    end
   end
 end

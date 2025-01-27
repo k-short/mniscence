@@ -11,8 +11,8 @@ defmodule MniscenceWeb.MniscenceLive do
         cookie: "asdf",
         id: "node-1",
         is_expanded: false,
-        name: "nodeone@localhost",
-        connection_status: :not_called
+        name: "nodeone@127.0.0.1",
+        connection_status: :disconnected
       }
 
     {:ok,
@@ -32,7 +32,7 @@ defmodule MniscenceWeb.MniscenceLive do
         id: node_id,
         is_expanded: false,
         name: name,
-        connection_status: :not_called
+        connection_status: :disconnected
       }
 
     {:noreply,
@@ -63,9 +63,10 @@ defmodule MniscenceWeb.MniscenceLive do
       fn node ->
         if node.id == expanded_node.id do
           connection_status =
-            case Nodes.alive?(String.to_atom(node.name), String.to_atom(node.cookie)) do
-              # TODO map return types to correct statuses
-              _ -> :failed_to_call
+            if Nodes.alive?(String.to_atom(node.name), String.to_atom(node.cookie)) do
+              :alive
+            else
+              :not_alive
             end
 
           %{node | connection_status: connection_status, is_expanded: true}
@@ -81,7 +82,7 @@ defmodule MniscenceWeb.MniscenceLive do
     update_node =
       fn node ->
         if node.id == collapsed_node.id do
-          %{node | is_expanded: false}
+          %{node | connection_status: :disconnected, is_expanded: false}
         else
           node
         end
@@ -127,15 +128,15 @@ defmodule MniscenceWeb.MniscenceLive do
               </button>
               <div>{node.name}</div>
               <%= case node.connection_status do %>
-                <% :called -> %>
+                <% :alive -> %>
                   <.icon
                     name="hero-check"
-                    class="w-4 h-4 ml-4 bg-green-500"
+                    class="w-4 h-4 ml-3 bg-green-500"
                   />
-                <% :failed_to_call -> %>
+                <% :not_alive -> %>
                   <.icon
                     name="hero-x-mark"
-                    class="w-4 h-4 ml-4 bg-red-500"
+                    class="w-4 h-4 ml-3 bg-red-500"
                   />
                 <% _ -> %>
               <% end %>
