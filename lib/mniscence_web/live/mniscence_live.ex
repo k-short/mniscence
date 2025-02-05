@@ -17,16 +17,16 @@ defmodule MniscenceWeb.MniscenceLive do
       }
 
     {:ok,
-      socket
-      |> assign(:nodes, [test_node])
-      |> assign(:show_add_node_modal, false)
-      |> assign(:node_form, @blank_node_form)
-    }
+     socket
+     |> assign(:nodes, [test_node])
+     |> assign(:show_add_node_modal, false)
+     |> assign(:node_form, @blank_node_form)}
   end
 
   def handle_event("node-added", params, socket) do
     %{"cookie" => cookie, "name" => name} = params
     node_id = "node-#{1 + length(socket.assigns.nodes)}"
+
     node =
       %{
         connection_status: :disconnected,
@@ -38,11 +38,10 @@ defmodule MniscenceWeb.MniscenceLive do
       }
 
     {:noreply,
-      socket
-      |> update(:nodes, fn nodes -> Enum.sort_by([node | nodes], & &1.name) end)
-      # TODO figure out why this isn't blanking the modal fields when it's opened again
-      |> assign(:node_form, @blank_node_form)
-    }
+     socket
+     |> update(:nodes, fn nodes -> Enum.sort_by([node | nodes], & &1.name) end)
+     # TODO figure out why this isn't blanking the modal fields when it's opened again
+     |> assign(:node_form, @blank_node_form)}
   end
 
   def handle_event("node-form-changed", _params, socket) do
@@ -70,17 +69,13 @@ defmodule MniscenceWeb.MniscenceLive do
               {:error, _error} -> {:failed, false, []}
             end
 
-          %{node |
-            connection_status: connection_status,
-            is_expanded: is_expanded,
-            tables: tables
-          }
+          %{node | connection_status: connection_status, is_expanded: is_expanded, tables: tables}
         else
           node
         end
       end
 
-      {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
+    {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
   end
 
   def handle_node_collapsed_event(collapsed_node, socket) do
@@ -93,7 +88,7 @@ defmodule MniscenceWeb.MniscenceLive do
         end
       end
 
-      {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
+    {:noreply, update(socket, :nodes, &Enum.map(&1, update_node))}
   end
 
   def render(assigns) do
@@ -101,7 +96,7 @@ defmodule MniscenceWeb.MniscenceLive do
     <div>
       <.modal id="add-node-modal">
         <.simple_form for={@node_form} phx-change="node-form-changed" phx-submit="node-added">
-          <.input field={@node_form[:name]} label="Name"/>
+          <.input field={@node_form[:name]} label="Name" />
           <.input field={@node_form[:cookie]} label="Cookie" />
           <:actions>
             <.button phx-click={hide_modal("add-node-modal")}>Add</.button>
@@ -109,20 +104,14 @@ defmodule MniscenceWeb.MniscenceLive do
         </.simple_form>
       </.modal>
       <div>
-        <div
-          id="sidebar"
-          class="flex flex-col w-1/4 min-h-96 p-2 border-solid border-2"
-        >
+        <div id="sidebar" class="flex flex-col w-1/4 min-h-96 p-2 border-solid border-2">
           <div class="flex justify-between">
             <div>Nodes</div>
             <button phx-click={show_modal("add-node-modal")}>
-              <.icon
-                name="hero-plus-circle"
-                class="bg-green-500 hover:bg-green-400"
-              />
+              <.icon name="hero-plus-circle" class="bg-green-500 hover:bg-green-400" />
             </button>
           </div>
-          <hr class="my-2"/>
+          <hr class="my-2" />
           <div :for={node <- @nodes}>
             <div class="flex items-center">
               <button phx-click="expand-node-toggled" phx-value-node-id={node.id}>
@@ -134,15 +123,9 @@ defmodule MniscenceWeb.MniscenceLive do
               <div>{node.name}</div>
               <%= case node.connection_status do %>
                 <% :connected -> %>
-                  <.icon
-                    name="hero-check"
-                    class="w-4 h-4 ml-3 bg-green-500"
-                  />
+                  <.icon name="hero-check" class="w-4 h-4 ml-3 bg-green-500" />
                 <% :failed -> %>
-                  <.icon
-                    name="hero-x-mark"
-                    class="w-4 h-4 ml-3 bg-red-500"
-                  />
+                  <.icon name="hero-x-mark" class="w-4 h-4 ml-3 bg-red-500" />
                 <% _ -> %>
               <% end %>
             </div>
