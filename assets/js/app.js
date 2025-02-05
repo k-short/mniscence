@@ -21,32 +21,11 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import Split from "../vendor/split"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 let Hooks = {}
 Hooks.Prompt = window.prompt
-
-// TODO: Fix split pane
-// When the sidebar re-renders after a node is added, the split pane gutter 
-// disappears and the sidebar gets smaller. 
-// 
-// Hooks.Split = {
-//   mounted() {
-//     splitInstance = Split(['#left-pane', '#right-pane'], {
-//       sizes: [20, 80],
-//       gutterSize: 4
-//     })
-//   },
-
-//   destroyed() {
-//     if (splitInstance) {
-//       splitInstance.destroy()
-//       splitInstance = null
-//     }
-//   }
-// }
 
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
