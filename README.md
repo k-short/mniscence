@@ -5,7 +5,7 @@ An early and WIP LiveView app for interacting with Mnesia databases.
 To start your Phoenix server:
 
   * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint inside IEx with `iex --name mniscence@localhost -S mix phx.server`. Phoenix needs to be started with a node so that it is started on a distributed node.
+  * Start Phoenix endpoint inside IEx with `iex --name mniscence@localhost -S mix phx.server`. Phoenix needs to be started with a name so that it is started on a distributed node.
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
