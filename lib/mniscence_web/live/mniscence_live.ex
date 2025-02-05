@@ -1,18 +1,19 @@
 defmodule MniscenceWeb.MniscenceLive do
   use MniscenceWeb, :live_view
 
-  alias Mniscence.Nodes
+  alias Mniscence.Mnesia
 
   @blank_node_form to_form(%{"name" => "", "cookie" => ""})
 
   def mount(_params, _session, socket) do
     test_node =
       %{
+        connection_status: :disconnected,
         cookie: "asdf",
         id: "node-1",
         is_expanded: false,
         name: "nodeone@127.0.0.1",
-        connection_status: :disconnected
+        tables: []
       }
 
     {:ok,
@@ -28,11 +29,12 @@ defmodule MniscenceWeb.MniscenceLive do
     node_id = "node-#{1 + length(socket.assigns.nodes)}"
     node =
       %{
+        connection_status: :disconnected,
         cookie: cookie,
         id: node_id,
         is_expanded: false,
         name: name,
-        connection_status: :disconnected
+        tables: []
       }
 
     {:noreply,
@@ -62,14 +64,17 @@ defmodule MniscenceWeb.MniscenceLive do
     update_node =
       fn node ->
         if node.id == expanded_node.id do
-          connection_status =
-            if Nodes.alive?(String.to_atom(node.name), String.to_atom(node.cookie)) do
-              :alive
-            else
-              :not_alive
+          {connection_status, is_expanded, tables} =
+            case Mnesia.list_tables(String.to_atom(node.name), String.to_atom(node.cookie)) do
+              {:ok, tables} -> {:connected, true, tables}
+              {:error, _error} -> {:failed, false, []}
             end
 
-          %{node | connection_status: connection_status, is_expanded: true}
+          %{node |
+            connection_status: connection_status,
+            is_expanded: is_expanded,
+            tables: tables
+          }
         else
           node
         end
@@ -128,12 +133,12 @@ defmodule MniscenceWeb.MniscenceLive do
               </button>
               <div>{node.name}</div>
               <%= case node.connection_status do %>
-                <% :alive -> %>
+                <% :connected -> %>
                   <.icon
                     name="hero-check"
                     class="w-4 h-4 ml-3 bg-green-500"
                   />
-                <% :not_alive -> %>
+                <% :failed -> %>
                   <.icon
                     name="hero-x-mark"
                     class="w-4 h-4 ml-3 bg-red-500"
@@ -141,6 +146,13 @@ defmodule MniscenceWeb.MniscenceLive do
                 <% _ -> %>
               <% end %>
             </div>
+            <%= if node.is_expanded do %>
+              <div :for={table <- node.tables}>
+                <div class="ml-5">{Atom.to_string(table)}</div>
+              </div>
+            <% else %>
+              <div></div>
+            <% end %>
           </div>
         </div>
       </div>
