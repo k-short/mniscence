@@ -23,14 +23,9 @@ import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-
-let Hooks = {}
-Hooks.Prompt = window.prompt
-
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken},
-  hooks: Hooks
+  params: {_csrf_token: csrfToken}
 })
 
 // Show progress bar on live navigation and form submits
